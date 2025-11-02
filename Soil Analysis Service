@@ -1,0 +1,59 @@
+package com.agrismart.service;
+
+import org.springframework.stereotype.Service;
+import com.agrismart.model.SoilAnalysis;
+import com.agrismart.model.SoilQuality;
+
+@Service
+public class SoilAnalysisService {
+    
+    public SoilAnalysis analyzeSoilQuality(double pH, double moisture, double nitrogen) {
+        int score = calculateSoilScore(pH, moisture, nitrogen);
+        SoilQuality quality = determineSoilQuality(score);
+        String recommendations = generateRecommendations(pH, moisture, nitrogen, quality);
+        
+        return new SoilAnalysis(pH, moisture, nitrogen, quality, score, recommendations);
+    }
+    
+    private int calculateSoilScore(double pH, double moisture, double nitrogen) {
+        int score = 0;
+        
+        // pH scoring (optimal: 6.0-7.5)
+        if (pH >= 6.0 && pH <= 7.5) score += 3;
+        else if (pH >= 5.5 && pH <= 8.0) score += 2;
+        else score += 1;
+        
+        // Moisture scoring (optimal: 25-35%)
+        if (moisture >= 25 && moisture <= 35) score += 3;
+        else if (moisture >= 20 && moisture <= 40) score += 2;
+        else score += 1;
+        
+        // Nitrogen scoring (optimal: >2.5 ppm)
+        if (nitrogen >= 2.5) score += 3;
+        else if (nitrogen >= 1.5) score += 2;
+        else score += 1;
+        
+        return score;
+    }
+    
+    private SoilQuality determineSoilQuality(int score) {
+        if (score >= 8) return SoilQuality.EXCELLENT;
+        else if (score >= 6) return SoilQuality.GOOD;
+        else return SoilQuality.POOR;
+    }
+    
+    private String generateRecommendations(double pH, double moisture, double nitrogen, SoilQuality quality) {
+        StringBuilder recommendations = new StringBuilder();
+        
+        if (pH < 6.0) recommendations.append("• Apply lime to increase pH level\n");
+        if (pH > 7.5) recommendations.append("• Add sulfur to decrease pH level\n");
+        if (moisture < 20) recommendations.append("• Irrigate immediately\n");
+        if (nitrogen < 1.5) recommendations.append("• Add nitrogen-rich fertilizer\n");
+        
+        if (quality == SoilQuality.EXCELLENT) {
+            recommendations.append("• Maintain current practices\n");
+        }
+        
+        return recommendations.toString();
+    }
+}
