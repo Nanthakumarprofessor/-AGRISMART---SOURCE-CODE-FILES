@@ -1,0 +1,36 @@
+package com.agrismart.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.agrismart.model.Farm;
+import com.agrismart.model.SoilAnalysis;
+import com.agrismart.service.FarmService;
+
+@RestController
+@RequestMapping("/api/farms")
+public class FarmController {
+    
+    @Autowired
+    private FarmService farmService;
+    
+    @PostMapping
+    public ResponseEntity<Farm> createFarm(@RequestBody Farm farm) {
+        Farm savedFarm = farmService.saveFarm(farm);
+        return ResponseEntity.ok(savedFarm);
+    }
+    
+    @PostMapping("/{farmId}/analyze-soil")
+    public ResponseEntity<SoilAnalysis> analyzeSoil(
+            @PathVariable Long farmId,
+            @RequestBody SoilData soilData) {
+        SoilAnalysis analysis = farmService.analyzeSoilQuality(farmId, soilData);
+        return ResponseEntity.ok(analysis);
+    }
+    
+    @GetMapping("/{farmId}")
+    public ResponseEntity<Farm> getFarm(@PathVariable Long farmId) {
+        Farm farm = farmService.getFarmById(farmId);
+        return farm != null ? ResponseEntity.ok(farm) : ResponseEntity.notFound().build();
+    }
+}
